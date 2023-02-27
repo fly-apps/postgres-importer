@@ -1,8 +1,10 @@
-# postgres-migrator
+# Postgres Importer
 
-Performs a `pg_dump` against a source database and restores it to a specified target.
+A simple Postgres importer tool.
 
-## Performing the migration
+## Usage
+Install the latest version of `flyctl` and run the following:
 
-
-`fly pg import --source-uri <source-postgres-uri> --app <target-fly-pg-app>`
+```
+fly pg import --source-uri <source-postgres-uri> --app <target-fly-pg-app>
+```
