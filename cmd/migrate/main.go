@@ -86,7 +86,17 @@ func main() {
 }
 
 func runPreChecks(ctx context.Context, opts migrationOpts) error {
-	// Ensure connectivity
+	// Verify source URI specifies a database.
+	sourceConf, err := pgx.ParseConfig(opts.sourceURI)
+	if err != nil {
+		return fmt.Errorf("failed to parse source uri: %s", err)
+	}
+
+	if sourceConf.Database == "" {
+		return fmt.Errorf("source-uri must contain a database reference (e.g. postgres://<user>:<pass>@<host>:<port>/<database>)")
+	}
+
+	// Check connectivity
 	sourceConn, err := openConnection(ctx, opts.sourceURI)
 	if err != nil {
 		return fmt.Errorf("failed to connect to source: %s", err)
