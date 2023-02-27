@@ -67,22 +67,21 @@ func main() {
 		dataOnly:  *dataOnly,
 	}
 
-	log.Println("[info] Running import pre-checks...")
+	log.Println("[info] Running pre-checks...")
 	if err := runPreChecks(ctx, opts); err != nil {
 		log.Printf("[error] %s", err)
 		os.Exit(1)
 		return
 	}
-	log.Println("[info] Import pre-checks completed without issues")
+	log.Println("[info] Pre-checks completed without issue")
 
-	log.Println("[info] Beginning import process... (This could take a while)")
+	log.Println("[info] Starting import process... (This could take a while)")
 	if err := runMigration(ctx, opts); err != nil {
 		log.Printf("[error] %s", err)
 		os.Exit(1)
 		return
 	}
-	log.Println("[info] Import complete")
-
+	log.Println("[info] Import complete!")
 }
 
 func runPreChecks(ctx context.Context, opts migrationOpts) error {
@@ -91,40 +90,35 @@ func runPreChecks(ctx context.Context, opts migrationOpts) error {
 	if err != nil {
 		return fmt.Errorf("failed to parse source uri: %s", err)
 	}
-
 	if sourceConf.Database == "" {
 		return fmt.Errorf("source-uri must contain a database reference (e.g. postgres://<user>:<pass>@<host>:<port>/<database>)")
 	}
 
-	// Check connectivity
+	// Check source connectivity
 	sourceConn, err := openConnection(ctx, opts.sourceURI)
 	if err != nil {
 		return fmt.Errorf("failed to connect to source: %s", err)
 	}
 	defer func() { _ = sourceConn.Close(ctx) }()
-	log.Println("[info] Source connnection is healthy")
 
+	// Check target connectivity
 	targetConn, err := openConnection(ctx, opts.targetURI)
 	if err != nil {
 		return fmt.Errorf("failed to connect to target: %s", err)
 	}
-	log.Println("[info] Target connnection is healthy")
-
 	defer func() { _ = targetConn.Close(ctx) }()
 
-	// Verify source version is not greater than target
+	// Verify source version is not greater than the target
 	var sourceVersion string
 	if err := sourceConn.QueryRow(ctx, "SHOW server_version;").Scan(&sourceVersion); err != nil {
 		return fmt.Errorf("failed to query source version: %s", err)
 	}
-
 	log.Println("[info] Source Postgres version: " + sourceVersion)
 
 	var targetVersion string
 	if err := targetConn.QueryRow(ctx, "SHOW server_version;").Scan(&targetVersion); err != nil {
 		return fmt.Errorf("failed to query target version: %s", err)
 	}
-
 	log.Println("[info] Target Postgres version: " + targetVersion)
 
 	sourceSlice := strings.Split(sourceVersion, ".")
