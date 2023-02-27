@@ -36,24 +36,24 @@ func main() {
 
 	sourceURI := os.Getenv("SOURCE_DATABASE_URI")
 	if sourceURI == "" {
-		panic("SOURCE_DATABASE_URI secret is required")
+		log.Printf("[error] SOURCE_DATABASE_URI secret must be set")
+		os.Exit(1)
+		return
 	}
 
 	// Build Target URI from environment
 	operatorPass := os.Getenv("OPERATOR_PASSWORD")
 	if operatorPass == "" {
 		log.Println("[error] OPERATOR_PASSWORD secret must be set")
-		panic("OPERATOR_PASSWORD secret must be set")
+		os.Exit(1)
+		return
 	}
 
 	appName := os.Getenv("FLY_APP_NAME")
 	if appName == "" {
-		log.Println("[error] FLY_APP_NAME environment varaible must be set")
-		panic("FLY_APP_NAME environment varaible must be set")
-	}
-
-	if operatorPass == "" || appName == "" {
-		panic("OPERATOR_PASSWORD and FLY_APP_NAME environment variables must be present")
+		log.Println("[error] FLY_APP_NAME environment variable must be set")
+		os.Exit(1)
+		return
 	}
 
 	targetURI := fmt.Sprintf("postgres://postgres:%s@%s.internal:5432", operatorPass, appName)
@@ -67,21 +67,21 @@ func main() {
 		dataOnly:  *dataOnly,
 	}
 
-	log.Println("[info] Running pre-checks")
+	log.Println("[info] Running import pre-checks...")
 	if err := runPreChecks(ctx, opts); err != nil {
 		log.Printf("[error] %s", err)
 		os.Exit(1)
 		return
 	}
-	log.Println("[info] Migration pre-checks have completed without issues")
+	log.Println("[info] Import pre-checks completed without issues")
 
-	log.Println("[info] Starting migration")
+	log.Println("[info] Beginning import process... (This could take a while)")
 	if err := runMigration(ctx, opts); err != nil {
 		log.Printf("[error] %s", err)
 		os.Exit(1)
 		return
 	}
-	log.Println("[info] Postgres migration has completed")
+	log.Println("[info] Import complete")
 
 }
 
@@ -118,14 +118,14 @@ func runPreChecks(ctx context.Context, opts migrationOpts) error {
 		return fmt.Errorf("failed to query source version: %s", err)
 	}
 
-	log.Println("[info] Source PG version: " + sourceVersion)
+	log.Println("[info] Source Postgres version: " + sourceVersion)
 
 	var targetVersion string
 	if err := targetConn.QueryRow(ctx, "SHOW server_version;").Scan(&targetVersion); err != nil {
 		return fmt.Errorf("failed to query target version: %s", err)
 	}
 
-	log.Println("[info] Target PG version: " + targetVersion)
+	log.Println("[info] Target Postgres version: " + targetVersion)
 
 	sourceSlice := strings.Split(sourceVersion, ".")
 	targetSlice := strings.Split(targetVersion, ".")
@@ -156,7 +156,7 @@ func runMigration(ctx context.Context, opts migrationOpts) error {
 	cmd := fmt.Sprintf("%s | %s", dumpStr, restoreStr)
 
 	if _, err := runCommand(cmd); err != nil {
-		return fmt.Errorf("failed to run migration: %s", err)
+		return fmt.Errorf("failed to import database: %s", err)
 	}
 
 	return nil
