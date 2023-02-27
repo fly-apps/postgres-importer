@@ -12,7 +12,7 @@ FROM postgres:${PG_VERSION}
 ARG VERSION
 
 LABEL fly.app_role=postgres-migrator
-LABEL fly.pg-version=${PG_VERSION}
+LABEL fly.version=${VERSION}
 
 RUN apt-get update && apt-get install --no-install-recommends -y \
     bash dnsutils \
