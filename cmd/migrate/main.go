@@ -41,22 +41,26 @@ func main() {
 		return
 	}
 
-	// Build Target URI from environment
+	var targetURI string
 	operatorPass := os.Getenv("OPERATOR_PASSWORD")
-	if operatorPass == "" {
-		log.Println("[error] OPERATOR_PASSWORD secret must be set")
-		os.Exit(1)
-		return
-	}
-
 	appName := os.Getenv("FLY_APP_NAME")
-	if appName == "" {
-		log.Println("[error] FLY_APP_NAME environment variable must be set")
+	targetURI = os.Getenv("TARGET_DATABASE_URI")
+
+	if appName != "" {
+		targetURI = fmt.Sprintf("postgres://postgres:%s@%s.internal:5432", operatorPass, appName)
+		if operatorPass == "" {
+			log.Println("[error] OPERATOR_PASSWORD secret must be set when FLY_APP_NAME is set")
+			os.Exit(1)
+			return
+		}
+	}
+
+	if targetURI == "" {
+		log.Println("[error] FLY_APP_NAME or TARGET_DATABASE_URI environment variable must be set")
 		os.Exit(1)
 		return
 	}
 
-	targetURI := fmt.Sprintf("postgres://postgres:%s@%s.internal:5432", operatorPass, appName)
 
 	opts := migrationOpts{
 		sourceURI: sourceURI,
