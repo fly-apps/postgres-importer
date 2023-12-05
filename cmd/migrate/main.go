@@ -44,6 +44,7 @@ func main() {
 	var targetURI string
 	operatorPass := os.Getenv("OPERATOR_PASSWORD")
 	appName := os.Getenv("FLY_APP_NAME")
+	targetURI = os.Getenv("TARGET_DATABASE_URI")
 
 	if appName != "" {
 		targetURI = fmt.Sprintf("postgres://postgres:%s@%s.internal:5432", operatorPass, appName)
@@ -53,8 +54,6 @@ func main() {
 			return
 		}
 	}
-
-	targetURI = os.Getenv("TARGET_DATABASE_URI")
 
 	if targetURI == "" {
 		log.Println("[error] FLY_APP_NAME or TARGET_DATABASE_URI environment variable must be set")
