@@ -174,5 +174,5 @@ func runCommand(cmdStr string) ([]byte, error) {
 	cmd := exec.Command("sh", "-c", cmdStr)
 	cmd.SysProcAttr = &syscall.SysProcAttr{}
 
-	return cmd.Output()
+	return cmd.CombinedOutput()
 }
