@@ -55,8 +55,16 @@ func main() {
 		os.Exit(1)
 		return
 	}
+	machineID := os.Getenv("PG_MACHINE_ID")
 
-	targetURI := fmt.Sprintf("postgres://postgres:%s@%s.internal:5432", operatorPass, appName)
+	appDomain := appName + ".internal"
+	if machineID != "" {
+		appDomain = machineID + ".vm." + appDomain
+	} else {
+		log.Println("[warn] PG_MACHINE_ID was not specified, falling back to resolving from app name")
+	}
+
+	targetURI := fmt.Sprintf("postgres://postgres:%s@%s:5432", operatorPass, appDomain)
 
 	opts := migrationOpts{
 		sourceURI: sourceURI,
@@ -174,5 +182,5 @@ func runCommand(cmdStr string) ([]byte, error) {
 	cmd := exec.Command("sh", "-c", cmdStr)
 	cmd.SysProcAttr = &syscall.SysProcAttr{}
 
-	return cmd.Output()
+	return cmd.CombinedOutput()
 }
