@@ -32,19 +32,19 @@ jobs:
         id: get-latest-tag
         uses: "WyriHaximus/github-action-get-previous-tag@v1"
       -
-        name: Build and push Postgres Importer 15
-        id: docker_build_15
+        name: Build and push Postgres Importer 16
+        id: docker_build_16
         uses: docker/build-push-action@v3
         with:
           build-args: |
-            PG_VERSION=15.2
+            PG_VERSION=16.3
             VERSION=${{ steps.get-latest-tag.outputs.tag }}
           context: .
           file: ./Dockerfile
           push: true
           tags: |
-            flyio/postgres-importer:15
-            flyio/postgres-importer:15.2
+            flyio/postgres-importer:16
+            flyio/postgres-importer:16.3
       -
-        name: Postgres Importer 15 Image digest
-        run: echo ${{ steps.docker_build_15.outputs.digest }}
+        name: Postgres Importer 16 Image digest
+        run: echo ${{ steps.docker_build_16.outputs.digest }}

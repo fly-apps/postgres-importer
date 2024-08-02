@@ -1,4 +1,4 @@
-ARG PG_VERSION=15.2
+ARG PG_VERSION=16.3
 ARG VERSION=custom
 
 FROM golang:1.20 as flyutil
